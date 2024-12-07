@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Numerology Calendar</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* Reset and Base Styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+        /* Numerology Input Form */
+        .numerology-form {
+            margin: 0 auto 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            max-width: 90%;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .numerology-form label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+            font-size: 1em;
+        }
+        .numerology-form input {
+            padding: 8px;
+            width: 100%;
+            max-width: 250px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1em;
+        }
+        .numerology-form button {
+            padding: 10px 20px;
+            background-color: #4287f5;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s;
+        }
+        .numerology-form button:hover {
+            background-color: #306edb;
+        }
+        /* Navigation Controls */
+        .navigation, .navigation-bottom {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 15px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .navigation button, .navigation-bottom button {
+            padding: 10px 15px;
+            background-color: #4287f5;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            min-width: 100px;
+            font-size: 1em;
+            transition: background-color 0.3s;
+        }
+        .navigation button:hover, .navigation-bottom button:hover {
+            background-color: #306edb;
+        }
+        .navigation-selectors, .navigation-bottom-selectors {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+        .navigation-selectors select, .navigation-bottom-selectors select,
+        .navigation-selectors input, .navigation-bottom-selectors input {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            min-width: 100px;
+            font-size: 1em;
+        }
+        /* Additional Numerology Display */
+        .month-numerology, .personal-month-numerology {
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+        .month-numerology strong, .personal-month-numerology strong {
+            font-weight: bold;
+        }
+        /* Fixed Header for Month and Year */
+        .fixed-header {
+            position: sticky;
+            top: 0;
+            background-color: #fff;
+            padding: 10px 0;
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            z-index: 1000;
+            border-bottom: 2px solid #ddd;
+            margin-bottom: 10px;
+        }
+        /* Calendar Styles */
+        .calendar-container {
+            max-width: 100%;
+            overflow-x: auto;
+        }
+        .calendar-container h2 {
+            /* Removed to place it in fixed-header */
+        }
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            width: 100%;
+        }
+        .day-header {
+            background-color: #4287f5;
+            color: #fff;
+            padding: 10px 0;
+            font-weight: bold;
+            text-align: center;
+            border-radius: 4px;
+            font-size: 1em;
+            word-wrap: break-word;
+        }
+        .day {
+            background-color: #fff;
+            padding: 10px;
+            border: 1px solid #ddd;
+            min-height: 150px;
+            box-sizing: border-box;
+            border-radius: 4px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            transition: box-shadow 0.3s;
+        }
+        .day.empty {
+            background-color: transparent;
+            border: none;
+        }
+        .day-number {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .numerology {
+            font-size: 0.9em;
+            margin-bottom: 5px;
+            display: flex;
+            flex-direction: column;
+        }
+        .numerology strong {
+            display: inline-block;
+            width: 120px;
+        }
+        .master-number {
+            color: #d32f2f;
+            font-weight: bold;
+        }
+        .today {
+            background-color: #ffeb3b !important;
+            border: 2px solid #f57f17 !important;
+            box-shadow: 0 0 10px rgba(245, 127, 23, 0.6);
+        }
+        .today::after {
+            content: "Today";
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background-color: rgba(0,0,0,0.5);
+            color: #fff;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-size: 0.8em;
+        }
+        /* Hover Effects */
+        .day:hover {
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8em;
+            }
+            .numerology-form label, .numerology-form input, .numerology-form button {
+                font-size: 0.9em;
+            }
+            .navigation button, .navigation-bottom button,
+            .navigation-selectors select, .navigation-selectors input,
+            .navigation-bottom-selectors select, .navigation-bottom-selectors input {
+                padding: 8px 12px;
+                font-size: 0.9em;
+                min-width: 80px;
+            }
+            .month-numerology, .personal-month-numerology {
+                font-size: 1em;
+            }
+            .fixed-header {
+                font-size: 1.3em;
+            }
+            .calendar-container h2 {
+                font-size: 1.3em;
+            }
+            .day-header {
+                font-size: 0.9em;
+                padding: 8px 0;
+            }
+            .day {
+                padding: 8px;
+                min-height: 140px;
+            }
+            .day-number {
+                font-size: 1em;
+            }
+            .numerology {
+                font-size: 0.8em;
+            }
+            .numerology strong {
+                width: 100px;
+            }
+        }
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.5em;
+            }
+            .numerology-form label, .numerology-form input, .numerology-form button {
+                font-size: 0.8em;
+            }
+            .navigation button, .navigation-bottom button,
+            .navigation-selectors select, .navigation-selectors input,
+            .navigation-bottom-selectors select, .navigation-bottom-selectors input {
+                padding: 6px 10px;
+                font-size: 0.8em;
+                min-width: 70px;
+            }
+            .month-numerology, .personal-month-numerology {
+                font-size: 0.9em;
+            }
+            .fixed-header {
+                font-size: 1.1em;
+            }
+            .calendar-container h2 {
+                font-size: 1.1em;
+            }
+            .day-header {
+                font-size: 0.8em;
+                padding: 6px 0;
+            }
+            .day {
+                padding: 6px;
+                min-height: 130px;
+            }
+            .day-number {
+                font-size: 0.9em;
+            }
+            .numerology {
+                font-size: 0.7em;
+            }
+            .numerology strong {
+                width: 80px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Numerology Calendar</h1>
+
+    <!-- Life Path Calculator -->
+    <form class="numerology-form" id="numerologyForm">
+        <div>
+            <label for="birthdate">Your Birthdate (DDMMYYYY):</label>
+            <input type="text" id="birthdate" placeholder="DDMMYYYY" required />
+            <button type="button" id="calculateLifePath">Calculate Life Path</button>
+        </div>
+        <div>
+            <label for="manualLifePath">Or Enter Your Life Path Number:</label>
+            <input type="number" id="manualLifePath" min="1" max="99" placeholder="Life Path Number" />
+        </div>
+        <div>
+            <strong>Life Path Number:</strong> <span id="displayLifePath">N/A</span>
+        </div>
+    </form>
+
+    <!-- Navigation Controls (Top) -->
+    <div class="navigation">
+        <button id="prevMonth">&lt; Previous</button>
+        <div class="navigation-selectors">
+            <select id="monthSelect"></select>
+            <input type="number" id="yearInput" min="1900" max="2100" />
+        </div>
+        <button id="nextMonth">Next &gt;</button>
+    </div>
+
+    <!-- Fixed Header for Month and Year -->
+    <div class="fixed-header" id="fixedMonthYear">
+        <!-- Month and Year will be inserted here via JavaScript -->
+    </div>
+
+    <!-- Additional Numerology Displays -->
+    <div class="month-numerology" id="monthNumerology">
+        <!-- Normal Numerology of the Month will appear here -->
+    </div>
+    <div class="personal-month-numerology" id="personalMonthNumerology">
+        <!-- Personal Month Numerology will appear here -->
+    </div>
+
+    <!-- Calendar Container -->
+    <div class="calendar-container">
+        <div class="calendar" id="calendar">
+            <!-- Calendar will be generated here -->
+        </div>
+    </div>
+
+    <!-- Navigation Controls (Bottom) -->
+    <div class="navigation-bottom">
+        <button id="prevMonthBottom">&lt; Previous</button>
+        <div class="navigation-bottom-selectors">
+            <select id="monthSelectBottom"></select>
+            <input type="number" id="yearInputBottom" min="1900" max="2100" />
+        </div>
+        <button id="nextMonthBottom">Next &gt;</button>
+    </div>
+
+    <script>
+        // Master Numbers
+        const masterNumbers = [11, 22, 33];
+
+        // Life Path Number
+        let lifePathNumber = null;
+
+        // Current Date State
+        let currentDate = new Date();
+
+        // DOM Elements
+        const numerologyForm = document.getElementById('numerologyForm');
+        const birthdateInput = document.getElementById('birthdate');
+        const calculateLifePathBtn = document.getElementById('calculateLifePath');
+        const manualLifePathInput = document.getElementById('manualLifePath');
+        const displayLifePath = document.getElementById('displayLifePath');
+        const fixedMonthYearHeader = document.getElementById('fixedMonthYear');
+        const calendar = document.getElementById('calendar');
+        const prevMonthBtn = document.getElementById('prevMonth');
+        const nextMonthBtn = document.getElementById('nextMonth');
+        const monthSelect = document.getElementById('monthSelect');
+        const yearInput = document.getElementById('yearInput');
+        const monthNumerologyDiv = document.getElementById('monthNumerology');
+        const personalMonthNumerologyDiv = document.getElementById('personalMonthNumerology');
+
+        // Bottom Navigation Controls
+        const prevMonthBottomBtn = document.getElementById('prevMonthBottom');
+        const nextMonthBottomBtn = document.getElementById('nextMonthBottom');
+        const monthSelectBottom = document.getElementById('monthSelectBottom');
+        const yearInputBottom = document.getElementById('yearInputBottom');
+
+        // Initialize Month Select Options for Top and Bottom
+        const monthNames = [
+            'January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December'
+        ];
+
+        function initializeMonthSelect(selectElement) {
+            selectElement.innerHTML = ''; // Clear existing options
+            monthNames.forEach((month, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = month;
+                selectElement.appendChild(option);
+            });
+        }
+
+        initializeMonthSelect(monthSelect);
+        initializeMonthSelect(monthSelectBottom);
+
+        // Set initial month and year inputs for Top and Bottom
+        monthSelect.value = currentDate.getMonth();
+        yearInput.value = currentDate.getFullYear();
+
+        monthSelectBottom.value = currentDate.getMonth();
+        yearInputBottom.value = currentDate.getFullYear();
+
+        // Helper Function to Sum Digits (Excluding Zeros)
+        function sumDigits(num) {
+            return num.toString().split('').reduce((acc, val) => {
+                const digit = parseInt(val);
+                return acc + (digit !== 0 ? digit : 0);
+            }, 0);
+        }
+
+        // Function to Reduce Number (Preserving Master Numbers)
+        function reduceNumber(num) {
+            if (masterNumbers.includes(num)) {
+                console.log(`Reducing: ${num} is a master number. Preserved.`);
+                return num;
+            }
+            while (num > 9) {
+                let sum = 0;
+                const digits = num.toString().split('');
+                digits.forEach(digit => {
+                    const digitInt = parseInt(digit);
+                    if (digitInt !== 0) { // Exclude zeros
+                        sum += digitInt;
+                    }
+                });
+                if (masterNumbers.includes(sum)) {
+                    console.log(`Reducing: Sum ${sum} is a master number. Preserved.`);
+                    return sum;
+                }
+                console.log(`Reducing: Sum ${sum} is not a master number. Continuing reduction.`);
+                num = sum;
+            }
+            console.log(`Reducing: Final reduced number is ${num}.`);
+            return num;
+        }
+
+        // Function to Calculate Life Path Number
+        function calculateLifePathNumber(birthdate) {
+            // Remove any non-digit characters from the birthdate
+            birthdate = birthdate.replace(/\D/g, '');
+
+            // Validate birthdate length
+            if (birthdate.length !== 8) {
+                alert('Please enter your birthdate in DDMMYYYY format.');
+                return null;
+            }
+
+            // Convert the birthdate to integers
+            const day = parseInt(birthdate.substring(0, 2));
+            const month = parseInt(birthdate.substring(2, 4));
+            const year = parseInt(birthdate.substring(4));
+
+            // Validate month, day, year
+            if (month < 1 || month > 12 || day < 1 || day > 31 || year < 1900 || year > 2100) {
+                alert('Please enter a valid birthdate.');
+                return null;
+            }
+
+            // Calculate sum of all digits in day, month, and year (excluding zeros)
+            const daySum = sumDigits(day);
+            const monthSum = sumDigits(month);
+            const yearSum = sumDigits(year);
+            let sumTotal = daySum + monthSum + yearSum;
+
+            console.log(`Life Path Calculation: Day Sum=${daySum}, Month Sum=${monthSum}, Year Sum=${yearSum}, Total=${sumTotal}`);
+
+            // Reduce the sumTotal unless it's a master number
+            if (!masterNumbers.includes(sumTotal)) {
+                sumTotal = reduceNumber(sumTotal);
+            }
+
+            console.log(`Final Life Path Number: ${sumTotal}`);
+            return sumTotal;
+        }
+
+        // Function to Generate Calendar
+        function generateCalendar(month, year) {
+            // Clear previous calendar and numerology displays
+            calendar.innerHTML = '';
+            monthNumerologyDiv.innerHTML = '';
+            personalMonthNumerologyDiv.innerHTML = '';
+
+            // Set month and year in fixed header
+            fixedMonthYearHeader.textContent = `${monthNames[month]} ${year}`;
+
+            // Calculate Normal Numerology of the Month
+            const normalMonthNumerology = calculateNormalMonthNumerology(month, year);
+            monthNumerologyDiv.innerHTML = `Normal Numerology of the Month: <strong>${normalMonthNumerology}</strong>`;
+
+            // Calculate Personal Month Numerology
+            let personalMonthNumerology = 'N/A';
+            if (lifePathNumber !== null) {
+                personalMonthNumerology = calculatePersonalMonthNumerology(normalMonthNumerology, lifePathNumber);
+                personalMonthNumerologyDiv.innerHTML = `Personal Month Numerology: <strong>${personalMonthNumerology}</strong>`;
+            }
+
+            // Days of the week headers
+            const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+            daysOfWeek.forEach(day => {
+                const dayHeader = document.createElement('div');
+                dayHeader.classList.add('day-header');
+                dayHeader.textContent = day;
+                calendar.appendChild(dayHeader);
+            });
+
+            // First day of the month
+            const firstDay = new Date(year, month, 1).getDay();
+
+            // Number of days in the month
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            // Get today's date in UTC
+            const today = new Date();
+            const todayUTC = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
+
+            // Fill in the blanks for days before the first day
+            for (let i = 0; i < firstDay; i++) {
+                const emptyCell = document.createElement('div');
+                emptyCell.classList.add('day', 'empty');
+                calendar.appendChild(emptyCell);
+            }
+
+            // Generate each day
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayCell = document.createElement('div');
+                dayCell.classList.add('day');
+
+                // Create a UTC date for comparison
+                const cellDateUTC = new Date(Date.UTC(year, month, day));
+
+                // Determine if this cell represents today
+                const isToday = todayUTC.getUTCFullYear() === year &&
+                                todayUTC.getUTCMonth() === month &&
+                                todayUTC.getUTCDate() === day;
+
+                // Highlight today
+                if (isToday) {
+                    dayCell.classList.add('today');
+                }
+
+                // Day number
+                const dayNumber = document.createElement('div');
+                dayNumber.classList.add('day-number');
+                dayNumber.textContent = day;
+                dayCell.appendChild(dayNumber);
+
+                // Calculate sum of all digits in day, month, and year (excluding zeros)
+                const daySum = sumDigits(day);
+                const monthSum = sumDigits(month + 1); // month is zero-based
+                const yearSum = sumDigits(year);
+                const sumTotal = daySum + monthSum + yearSum;
+
+                console.log(`Date: ${day}-${month + 1}-${year}, Day Sum=${daySum}, Month Sum=${monthSum}, Year Sum=${yearSum}, Sum Total=${sumTotal}`);
+
+                let primaryNumerology = sumTotal;
+                let secondaryNumerology = '';
+
+                if (masterNumbers.includes(sumTotal)) {
+                    // Primary Numerology is a master number; keep as is
+                    primaryNumerology = sumTotal;
+                    secondaryNumerology = '';
+                    console.log(`Primary Numerology is a master number: ${primaryNumerology}`);
+                } else if (sumTotal > 9) {
+                    // Primary Numerology is a double-digit number; reduce it
+                    const reduced = reduceNumber(sumTotal);
+                    if (masterNumbers.includes(reduced)) {
+                        primaryNumerology = reduced;
+                        secondaryNumerology = '';
+                        console.log(`Primary Numerology is reduced to a master number: ${primaryNumerology}`);
+                    } else {
+                        primaryNumerology = reduced;
+                        secondaryNumerology = sumTotal;
+                        console.log(`Primary Numerology is reduced: ${primaryNumerology}, Secondary Numerology: ${secondaryNumerology}`);
+                    }
+                } else {
+                    // Primary Numerology is a single-digit number; no secondary number
+                    primaryNumerology = sumTotal;
+                    secondaryNumerology = '';
+                    console.log(`Primary Numerology is single-digit: ${primaryNumerology}`);
+                }
+
+                // Primary Numerology Display
+                const primaryDiv = document.createElement('div');
+                primaryDiv.classList.add('numerology');
+                primaryDiv.innerHTML = `<strong>Primary:</strong> 
+                    <span class="${masterNumbers.includes(primaryNumerology) ? 'master-number' : ''}">
+                        ${primaryNumerology}
+                    </span>`;
+                dayCell.appendChild(primaryDiv);
+
+                // Secondary Numerology Display
+                const secondaryDiv = document.createElement('div');
+                secondaryDiv.classList.add('numerology');
+                if (secondaryNumerology !== '') {
+                    secondaryDiv.innerHTML = `<strong>Secondary:</strong> 
+                        <span class="${masterNumbers.includes(secondaryNumerology) ? 'master-number' : ''}">
+                            ${secondaryNumerology}
+                        </span>`;
+                } else {
+                    secondaryDiv.innerHTML = `<strong>Secondary:</strong> 
+                        <span>N/A</span>`;
+                }
+                dayCell.appendChild(secondaryDiv);
+
+                // Personal Numerology Calculation
+                let personalNumerology = 'N/A';
+                if (lifePathNumber !== null) {
+                    const numToAdd = secondaryNumerology !== '' ? secondaryNumerology : primaryNumerology;
+                    const personalTotal = numToAdd + lifePathNumber;
+                    const isMasterPersonal = masterNumbers.includes(personalTotal);
+                    const personalCalc = isMasterPersonal ? personalTotal : reduceNumber(personalTotal);
+                    personalNumerology = `<span class="${masterNumbers.includes(personalCalc) ? 'master-number' : ''}">
+                        ${personalCalc}
+                    </span>`;
+                    console.log(`Personal Numerology: ${personalCalc}`);
+                }
+
+                // Personal Numerology Display
+                const personalDiv = document.createElement('div');
+                personalDiv.classList.add('numerology');
+                personalDiv.innerHTML = `<strong>Personal:</strong> ${personalNumerology}`;
+                dayCell.appendChild(personalDiv);
+
+                calendar.appendChild(dayCell);
+            }
+        }
+
+        // Function to Calculate Normal Numerology of the Month
+        function calculateNormalMonthNumerology(month, year) {
+            const monthNumber = month + 1; // 0-based index
+            const monthSum = sumDigits(monthNumber);
+            const yearSum = sumDigits(year);
+            const normalNumerology = monthSum + yearSum;
+            console.log(`Normal Numerology of the Month: Month Sum=${monthSum}, Year Sum=${yearSum}, Total=${normalNumerology}`);
+            return masterNumbers.includes(normalNumerology) ? normalNumerology : reduceNumber(normalNumerology);
+        }
+
+        // Function to Calculate Personal Month Numerology
+        function calculatePersonalMonthNumerology(normalNumerology, lifePath) {
+            const personalTotal = normalNumerology + lifePath;
+            const personalNumerology = masterNumbers.includes(personalTotal) ? personalTotal : reduceNumber(personalTotal);
+            console.log(`Personal Month Numerology: Normal=${normalNumerology}, Life Path=${lifePath}, Total=${personalTotal}, Personal Numerology=${personalNumerology}`);
+            return personalNumerology;
+        }
+
+        // Initial Calendar Generation
+        generateCalendar(currentDate.getMonth(), currentDate.getFullYear());
+
+        // Event Listeners
+
+        // Handle Life Path Calculation
+        calculateLifePathBtn.addEventListener('click', () => {
+            const birthdate = birthdateInput.value;
+            const calculatedLifePath = calculateLifePathNumber(birthdate);
+            if (calculatedLifePath !== null) {
+                lifePathNumber = calculatedLifePath;
+                displayLifePath.textContent = lifePathNumber;
+                manualLifePathInput.value = lifePathNumber;
+                generateCalendar(currentDate.getMonth(), currentDate.getFullYear());
+            }
+        });
+
+        // Handle Manual Life Path Input
+        manualLifePathInput.addEventListener('input', () => {
+            const manualLifePath = parseInt(manualLifePathInput.value, 10);
+            if (!isNaN(manualLifePath) && manualLifePath > 0) {
+                lifePathNumber = manualLifePath;
+                displayLifePath.textContent = lifePathNumber;
+                generateCalendar(currentDate.getMonth(), currentDate.getFullYear());
+            } else {
+                lifePathNumber = null;
+                displayLifePath.textContent = 'N/A';
+                generateCalendar(currentDate.getMonth(), currentDate.getFullYear());
+            }
+        });
+
+        // Handle Previous Month Button (Top)
+        prevMonthBtn.addEventListener('click', () => {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            updateCalendar();
+        });
+
+        // Handle Next Month Button (Top)
+        nextMonthBtn.addEventListener('click', () => {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            updateCalendar();
+        });
+
+        // Handle Previous Month Button (Bottom)
+        prevMonthBottomBtn.addEventListener('click', () => {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            updateCalendar();
+        });
+
+        // Handle Next Month Button (Bottom)
+        nextMonthBottomBtn.addEventListener('click', () => {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            updateCalendar();
+        });
+
+        // Handle Month Select Change (Top)
+        monthSelect.addEventListener('change', (e) => {
+            const selectedMonth = parseInt(e.target.value, 10);
+            currentDate.setMonth(selectedMonth);
+            updateCalendar();
+        });
+
+        // Handle Month Select Change (Bottom)
+        monthSelectBottom.addEventListener('change', (e) => {
+            const selectedMonth = parseInt(e.target.value, 10);
+            currentDate.setMonth(selectedMonth);
+            updateCalendar();
+        });
+
+        // Handle Year Input Change (Top)
+        yearInput.addEventListener('change', (e) => {
+            const selectedYear = parseInt(e.target.value, 10);
+            if (!isNaN(selectedYear)) {
+                currentDate.setFullYear(selectedYear);
+                updateCalendar();
+            }
+        });
+
+        // Handle Year Input Change (Bottom)
+        yearInputBottom.addEventListener('change', (e) => {
+            const selectedYear = parseInt(e.target.value, 10);
+            if (!isNaN(selectedYear)) {
+                currentDate.setFullYear(selectedYear);
+                updateCalendar();
+            }
+        });
+
+        // Function to Update Calendar and Selectors
+        function updateCalendar() {
+            // Update selectors
+            monthSelect.value = currentDate.getMonth();
+            monthSelectBottom.value = currentDate.getMonth();
+            yearInput.value = currentDate.getFullYear();
+            yearInputBottom.value = currentDate.getFullYear();
+
+            // Regenerate calendar
+            generateCalendar(currentDate.getMonth(), currentDate.getFullYear());
+        }
+    </script>
+
+</body>
+</html>

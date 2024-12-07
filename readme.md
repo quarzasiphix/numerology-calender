@@ -1,0 +1,1 @@
+Numerology calender that shows personal date and numerology for every day

@@ -126,9 +126,6 @@
             max-width: 100%;
             overflow-x: auto;
         }
-        .calendar-container h2 {
-            /* Removed to place it in fixed-header */
-        }
         .calendar {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
@@ -157,10 +154,12 @@
             flex-direction: column;
             justify-content: flex-start;
             transition: box-shadow 0.3s;
+            cursor: pointer; /* Indicate clickable */
         }
         .day.empty {
             background-color: transparent;
             border: none;
+            cursor: default;
         }
         .day-number {
             font-size: 1.2em;
@@ -284,6 +283,46 @@
                 width: 80px;
             }
         }
+        /* Modal Styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 2000; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.5); /* Black w/ opacity */
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto; /* 10% from the top and centered */
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%; /* Could be more or less, depending on screen size */
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            cursor: pointer;
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -346,7 +385,60 @@
         <button id="nextMonthBottom">Next &gt;</button>
     </div>
 
+    <!-- Meaning Modal -->
+    <div id="meaningModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Day's Numerology Meaning</h2>
+            <div id="modalContent">
+                <!-- Content will be injected via JavaScript -->
+            </div>
+        </div>
+    </div>
+
     <script>
+        // Numerology Meanings
+        const numerologyMeanings = {
+            primary: {
+                1: "Leadership, independence, initiative.",
+                2: "Cooperation, balance, partnership.",
+                3: "Creativity, communication, expression.",
+                4: "Stability, practicality, hard work.",
+                5: "Freedom, change, adventure.",
+                6: "Responsibility, nurturing, community.",
+                7: "Introspection, spirituality, analysis.",
+                8: "Power, ambition, material success.",
+                9: "Compassion, humanitarianism, completion."
+            },
+            master: {
+                11: "Intuition, spiritual insight, enlightenment.",
+                22: "Master builder, large-scale projects, manifestation.",
+                33: "Master teacher, altruism, selfless service."
+            },
+            secondary: {
+                10: "New beginnings, potential, self-confidence.",
+                12: "Creativity, optimism, social interaction.",
+                13: "Transformation, resilience, practicality.",
+                14: "Adaptability, versatility, change.",
+                15: "Sensitivity, responsibility, harmony.",
+                16: "Introspection, spiritual growth, intuition.",
+                17: "Ambition, leadership, inspiration.",
+                18: "Compassion, humanitarianism, balance.",
+                19: "Independence, creativity, self-expression.",
+                20: "Diplomacy, partnership, sensitivity.",
+                21: "Achievement, creativity, social interaction.",
+                22: "Master builder, large-scale projects, manifestation.", // Note: 22 is already a master number
+                23: "Adaptability, communication, versatility.",
+                24: "Responsibility, nurturing, community.",
+                25: "Introspection, spiritual insight, analysis.",
+                26: "Power, ambition, material success.",
+                27: "Compassion, humanitarianism, spiritual growth.",
+                28: "Leadership, independence, initiative.",
+                29: "Intuition, spiritual insight, enlightenment.",
+                30: "Creativity, communication, expression."
+            }
+        };
+
         // Master Numbers
         const masterNumbers = [11, 22, 33];
 
@@ -596,7 +688,7 @@
                 secondaryDiv.classList.add('numerology');
                 if (secondaryNumerology !== '') {
                     secondaryDiv.innerHTML = `<strong>Secondary:</strong> 
-                        <span class="${masterNumbers.includes(secondaryNumerology) ? 'master-number' : ''}">
+                        <span class="${numerologyMeanings.secondary[secondaryNumerology] ? 'master-number' : ''}">
                             ${secondaryNumerology}
                         </span>`;
                 } else {
@@ -612,7 +704,7 @@
                     const personalTotal = numToAdd + lifePathNumber;
                     const isMasterPersonal = masterNumbers.includes(personalTotal);
                     const personalCalc = isMasterPersonal ? personalTotal : reduceNumber(personalTotal);
-                    personalNumerology = `<span class="${masterNumbers.includes(personalCalc) ? 'master-number' : ''}">
+                    personalNumerology = `<span class="${numerologyMeanings.master[personalCalc] ? 'master-number' : ''}">
                         ${personalCalc}
                     </span>`;
                     console.log(`Personal Numerology: ${personalCalc}`);
@@ -623,6 +715,11 @@
                 personalDiv.classList.add('numerology');
                 personalDiv.innerHTML = `<strong>Personal:</strong> ${personalNumerology}`;
                 dayCell.appendChild(personalDiv);
+
+                // **Attach Click Event Listener to Show Meaning**
+                dayCell.addEventListener('click', () => {
+                    showMeaningModal(primaryNumerology, secondaryNumerology);
+                });
 
                 calendar.appendChild(dayCell);
             }
@@ -645,6 +742,65 @@
             console.log(`Personal Month Numerology: Normal=${normalNumerology}, Life Path=${lifePath}, Total=${personalTotal}, Personal Numerology=${personalNumerology}`);
             return personalNumerology;
         }
+
+        // Function to Show Meaning Modal
+        function showMeaningModal(primaryNum, secondaryNum) {
+            const modal = document.getElementById('meaningModal');
+            const modalContent = document.getElementById('modalContent');
+
+            // Clear previous content
+            modalContent.innerHTML = '';
+
+            // Create Content for Primary Numerology
+            const primaryHeading = document.createElement('h3');
+            primaryHeading.textContent = `Primary Numerology (${primaryNum})`;
+            modalContent.appendChild(primaryHeading);
+
+            const primaryMeaning = document.createElement('p');
+            if (numerologyMeanings.master[primaryNum]) {
+                primaryMeaning.textContent = numerologyMeanings.master[primaryNum];
+            } else if (numerologyMeanings.primary[primaryNum]) {
+                primaryMeaning.textContent = numerologyMeanings.primary[primaryNum];
+            } else {
+                primaryMeaning.textContent = 'No meaning defined.';
+            }
+            modalContent.appendChild(primaryMeaning);
+
+            // Create Content for Secondary Numerology, if applicable
+            if (secondaryNum !== '' && secondaryNum !== 'N/A') {
+                const secondaryHeading = document.createElement('h3');
+                secondaryHeading.textContent = `Secondary Numerology (${secondaryNum})`;
+                modalContent.appendChild(secondaryHeading);
+
+                const secondaryMeaning = document.createElement('p');
+                if (numerologyMeanings.secondary[secondaryNum]) {
+                    secondaryMeaning.textContent = numerologyMeanings.secondary[secondaryNum];
+                } else {
+                    secondaryMeaning.textContent = 'No meaning defined.';
+                }
+                modalContent.appendChild(secondaryMeaning);
+            }
+
+            // Display the modal
+            modal.style.display = 'block';
+        }
+
+        // Function to Close Modal
+        function closeModal() {
+            const modal = document.getElementById('meaningModal');
+            modal.style.display = 'none';
+        }
+
+        // Attach Event Listener to Close Button
+        document.querySelector('.close-button').addEventListener('click', closeModal);
+
+        // Close Modal When Clicking Outside the Modal Content
+        window.addEventListener('click', (event) => {
+            const modal = document.getElementById('meaningModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        });
 
         // Initial Calendar Generation
         generateCalendar(currentDate.getMonth(), currentDate.getFullYear());

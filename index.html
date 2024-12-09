@@ -427,7 +427,7 @@
                 19: "Independence, creativity, self-expression.",
                 20: "Diplomacy, partnership, sensitivity.",
                 21: "Achievement, creativity, social interaction.",
-                22: "Master builder, large-scale projects, manifestation.", // Note: 22 is already a master number
+                22: "Master builder, large-scale projects, manifestation.", // Note: 22 is a master number
                 23: "Adaptability, communication, versatility.",
                 24: "Responsibility, nurturing, community.",
                 25: "Introspection, spiritual insight, analysis.",
@@ -436,6 +436,38 @@
                 28: "Leadership, independence, initiative.",
                 29: "Intuition, spiritual insight, enlightenment.",
                 30: "Creativity, communication, expression."
+            },
+            personal: {
+                1: "Embarking on new ventures, taking charge of your life.",
+                2: "Fostering partnerships, seeking harmony and balance.",
+                3: "Expressing creativity, enhancing communication skills.",
+                4: "Building solid foundations, focusing on practical matters.",
+                5: "Embracing change, seeking adventure and freedom.",
+                6: "Nurturing relationships, taking responsibility in your community.",
+                7: "Engaging in spiritual practices, seeking inner wisdom.",
+                8: "Pursuing career advancements, harnessing personal power.",
+                9: "Focusing on humanitarian efforts, completing personal cycles.",
+                10: "Initiating new projects with confidence and enthusiasm.",
+                11: "Enhancing intuition and spiritual growth.",
+                12: "Balancing creativity with social interactions.",
+                13: "Transforming challenges into practical solutions.",
+                14: "Adapting to changes with versatility.",
+                15: "Cultivating sensitivity and harmony in your surroundings.",
+                16: "Deepening spiritual insights and personal introspection.",
+                17: "Driving ambition and inspiring others through leadership.",
+                18: "Balancing compassion with practical responsibilities.",
+                19: "Expressing independence through creative endeavors.",
+                20: "Fostering diplomatic relationships and partnerships.",
+                21: "Achieving personal goals through creativity and social interaction.",
+                22: "Manifesting large-scale projects with masterful planning.",
+                23: "Communicating effectively while adapting to new situations.",
+                24: "Nurturing your community with a sense of responsibility.",
+                25: "Delving into spiritual insights through introspection.",
+                26: "Harnessing ambition to achieve material success.",
+                27: "Combining compassion with spiritual growth.",
+                28: "Leading with independence and initiative.",
+                29: "Deepening intuition and spiritual enlightenment.",
+                30: "Expressing creativity and enhancing communication skills."
             }
         };
 
@@ -687,8 +719,9 @@
                 const secondaryDiv = document.createElement('div');
                 secondaryDiv.classList.add('numerology');
                 if (secondaryNumerology !== '') {
+                    // **Corrected Condition: Check if the secondaryNumerology is a master number**
                     secondaryDiv.innerHTML = `<strong>Secondary:</strong> 
-                        <span class="${numerologyMeanings.secondary[secondaryNumerology] ? 'master-number' : ''}">
+                        <span class="${masterNumbers.includes(secondaryNumerology) ? 'master-number' : ''}">
                             ${secondaryNumerology}
                         </span>`;
                 } else {
@@ -704,21 +737,29 @@
                     const personalTotal = numToAdd + lifePathNumber;
                     const isMasterPersonal = masterNumbers.includes(personalTotal);
                     const personalCalc = isMasterPersonal ? personalTotal : reduceNumber(personalTotal);
-                    personalNumerology = `<span class="${numerologyMeanings.master[personalCalc] ? 'master-number' : ''}">
-                        ${personalCalc}
-                    </span>`;
+                    personalNumerology = personalCalc;
                     console.log(`Personal Numerology: ${personalCalc}`);
                 }
 
                 // Personal Numerology Display
                 const personalDiv = document.createElement('div');
                 personalDiv.classList.add('numerology');
-                personalDiv.innerHTML = `<strong>Personal:</strong> ${personalNumerology}`;
+                if (personalNumerology !== 'N/A') {
+                    personalDiv.innerHTML = `<strong>Personal:</strong> 
+                        <span class="${masterNumbers.includes(personalNumerology) ? 'master-number' : ''}">
+                            ${personalNumerology}
+                        </span>`;
+                } else {
+                    personalDiv.innerHTML = `<strong>Personal:</strong> <span>N/A</span>`;
+                }
                 dayCell.appendChild(personalDiv);
+
+                // Define the selected date string in DD/MM/YYYY format
+                const selectedDate = `${day}/${month + 1}/${year}`;
 
                 // **Attach Click Event Listener to Show Meaning**
                 dayCell.addEventListener('click', () => {
-                    showMeaningModal(primaryNumerology, secondaryNumerology);
+                    showMeaningModal(primaryNumerology, secondaryNumerology, personalNumerology, selectedDate);
                 });
 
                 calendar.appendChild(dayCell);
@@ -744,12 +785,17 @@
         }
 
         // Function to Show Meaning Modal
-        function showMeaningModal(primaryNum, secondaryNum) {
+        function showMeaningModal(primaryNum, secondaryNum, personalNum, selectedDate) {
             const modal = document.getElementById('meaningModal');
             const modalContent = document.getElementById('modalContent');
 
             // Clear previous content
             modalContent.innerHTML = '';
+
+            // Display Selected Date
+            const dateParagraph = document.createElement('p');
+            dateParagraph.innerHTML = `<strong>Date:</strong> ${selectedDate}`;
+            modalContent.appendChild(dateParagraph);
 
             // Create Content for Primary Numerology
             const primaryHeading = document.createElement('h3');
@@ -779,6 +825,21 @@
                     secondaryMeaning.textContent = 'No meaning defined.';
                 }
                 modalContent.appendChild(secondaryMeaning);
+            }
+
+            // Create Content for Personal Numerology, if applicable
+            if (personalNum !== '' && personalNum !== 'N/A') {
+                const personalHeading = document.createElement('h3');
+                personalHeading.textContent = `Personal Numerology (${personalNum})`;
+                modalContent.appendChild(personalHeading);
+
+                const personalMeaning = document.createElement('p');
+                if (numerologyMeanings.personal[personalNum]) {
+                    personalMeaning.textContent = numerologyMeanings.personal[personalNum];
+                } else {
+                    personalMeaning.textContent = 'No meaning defined.';
+                }
+                modalContent.appendChild(personalMeaning);
             }
 
             // Display the modal
